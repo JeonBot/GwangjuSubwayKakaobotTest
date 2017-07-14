@@ -12,6 +12,49 @@ app = Flask(__name__)
 @app.route('/')
 def hello():
     return "안녕하세요?"
+def getStationID(stationName):
+    try:
+        stationIDdict =  {
+            u'녹동': 100,
+            u'소태': 101,
+            u'학동증심사입구': 102,
+            u'학동증심사': 102,
+            u'학동증':102,
+            u'학동':102,
+            u'남광주': 103,
+            u'문화전당(구도청)': 104,
+            u'문화전당': 104,
+            u'문화전':104,
+            u'문화': 104,
+            u'금남로4가' : 105,
+            u'금남4':105,
+            u'금4':105,
+            u'금남고5가' : 106,
+            u'금남5':106,
+            u'금5':106,
+            u'양동시장' : 107,
+            u'돌고개' : 108,
+            u'농성' : 109,
+            u'화정' : 110,
+            u'쌍촌' : 111,
+            u'운천' : 112,
+            u'상무' : 113,
+            u'김대중컨벤션센터(마륵)' : 114,
+            u'김대중': 114,
+            u'김대':114,
+            u'공항' : 115,
+            u'송정공원' : 116,
+            u'송정':116,
+            u'광주송정역' : 117,
+            u'광주송정':117,
+            u'광주':117,
+            u'도산' : 118,
+            u'평동' : 119,
+        }[stationName]
+        return stationIDdict
+    except:
+        print "Exception non existing Station Name: ", stationName
+        return None
 
 @app.route("/keyboard", methods=["GET", "POST"])
 #@app.route("/keyboard", methods=["GET"])
@@ -71,7 +114,12 @@ def message():
         show_buttons = {
                             "message": {
                                             "text": "도움말인데 아직 내용은..."
+                            },
+                            "keyboard": {
+                                            "type": "buttons",
+                                            "buttons": ["시작하기","사용법","개발사"]
                             }
+
                         }
     elif u"안녕" in content:
         show_buttons = {
