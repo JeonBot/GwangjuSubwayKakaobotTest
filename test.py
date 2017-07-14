@@ -9,12 +9,12 @@ from gevent.wsgi import WSGIServer
 
 app = Flask(__name__)
 
-#@app.route('/')
-#def hello():
-#    return '안녕하세요?'
+@app.route('/')
+def hello():
+    return "안녕하세요?"
 
-@app.route("/keyboard", methods=['GET', 'POST'])
-#@app.route("/keyboard", methods=['GET'])
+@app.route("/keyboard", methods=["GET", "POST"])
+#@app.route("/keyboard", methods=["GET"])
 def keyboard():
     #if request.method == 'POST':
     #    print 'POST request'
@@ -33,13 +33,13 @@ def keyboard():
 #                                                    "height": 480
 #                                        },            
 #                        },
-                        "type" : "buttons",
-                        "buttons" : ["시작하기","사용법","개발사"]
+                        "type": "buttons",
+                        "buttons": ["시작하기","사용법","개발사"]
                     }
     
     return jsonify(show_buttons)
 
-@app.route("/message", methods=['POST'])
+@app.route("/message", methods=["POST"])
 def message():
     dataReceive = request.get_json()
     content = dataReceive['content']
@@ -47,26 +47,27 @@ def message():
     if content == u"시작하기":
         show_buttons = {
                             "message": {
-                                            "text": "안녕하세요? 어느 역에서 타시나요?"
+                                            "text": "어디에서 탑승하시나요? 옆으로 쓸어 넘겨 출발지를 찾아보세요."
                             },
-#                                "type": {
-#                                            "text"
-#                            }
+#                                # 말로 받기?
+#                                "type": "text"
                             # 버튼은 한 화면에 3개씩 노출
                             "keyboard": {
                                             "type": "buttons",
-                                            "buttons": ["녹동","소태","학동증심사입구","남광주","문화전당","금남로4가","금남로5가","양동시장","돌고개","농성","화정","운천","상무","쌍촌","김대중컨벤션센터","공항","송정공원","광주송정","도산","평동"]
+                                            "buttons": ["녹동에서","소태에서","학동증심사입구에서","남광주에서","문화전당에서","금남로4가에서","금남로5가에서","양동시장에서","돌고개에서","농성에서","화정에서","운천에서","상무에서","쌍촌에서","김대중컨벤션센터에서","공항에서","송정공원에서","광주송정에서","도산에서","평동에서"]
                             }
-#                            dataReceiveStation = request.get_json()
-#                            contentStation = dataReceiveStation['content']
-#                            if contentStation == u"녹동":
-#                                show_buttons = {
-#                                                    "message": {
-#                                                                    "text": "thanx"
-#                                                    }
-#                                                }
                         }
-    elif content == u"도움말":
+#        # 이렇겐 안되는데...
+#        dataReceiveStation = request.get_json()
+#        contentStation = dataReceiveStation['content']
+#        if contentStation == u"녹동":
+#                show_buttons = {
+#                                    "message": {
+#                                                    "text": "thanx"
+#                                    }
+#                                }
+                        
+    elif content == u"사용법":
         show_buttons = {
                             "message": {
                                             "text": "도움말인데 아직 내용은..."
@@ -78,6 +79,7 @@ def message():
                                             "text": "안녕하세요! 반갑습니다!"
                             }
                         }
+#    # 이렇게 놓으면 가는 녹동인지 오는 녹동인지 모른다.
 #    elif u"녹동" in content:
 #        show_buttons = {
 #                            "message": {
@@ -85,14 +87,54 @@ def message():
 #                            },
 #                            "keyboard": {
 #                                            "type": "buttons",
-#                                            "buttons": ["녹동","소태","학동증심사","남광주","문화전당","금남로4가","금남로5가","양동시장","돌고개","농성","화정","운천","상무","쌍촌","김대중컨벤션센터","공항","송정공원","광주송정","도산","평동"]
+#                                            "buttons": ["녹동으로","소태로","학동증심사입구로","남광주로","문화전당으로","금남로4가로","금남로5가로","양동시장으로","돌고개로","농성으로","화정으로","운천으로","상무로","쌍촌으로","김대중컨벤션센터로","공항으로","송정공원으로","광주송정으로","도산으로","평동으로"]
 #                            }
 #                        }
-    else:
+    elif u"녹동에서" in content:
         show_buttons = {
                             "message": {
-                                            "text": "이해하지 못했어요."    
+                                            "text": "어디까지 가시나요?"
+                            },
+                            "keyboard": {
+                                            "type": "buttons",
+                                            "buttons": ["녹동으로","소태로","학동증심사입구로","남광주로","문화전당으로","금남로4가로","금남로5가로","양동시장으로","돌고개로","농성으로","화정으로","운천으로","상무로","쌍촌으로","김대중컨벤션센터로","공항으로","송정공원으로","광주송정으로","도산으로","평동으로"]
                             }
+                        }
+    elif u"소태로" in content:
+        show_buttons = {
+                            "message": {
+                                            "text": "현재 몇분 남았습니다"
+                            },
+                            "keyboard": {
+                                            "type": "buttons",
+                                            "buttons": ["시작하기","사용법","개발사"]
+                            }
+                        }
+    elif u"개발사" in content:
+        show_buttons = {
+                            "message": {
+                                            "text": "KETI 전자부품연구원\n임베디드 & SW 연구센터", 
+                                            "photo": {
+                                                        "url": "http://www.keti.re.kr/_upload/editor/2016/12/09/recruit_main-1481273868_5aeb7d6cabb864d7c90a25ca125a930d.bmp",
+                                                        "width": 640,
+                                                        "height": 480
+                                            }
+                            },
+                            "keyboard": {
+                                            "type": "buttons",
+                                            "buttons": ["시작하기","사용법","개발사"]
+                            }                            
+                        }
+    else:        
+        show_buttons = {
+                            "message": {
+                                            "text": "이해하지 못했어요. 무엇을 할까요?"    
+                            },
+                            "keyboard": {
+                                            "type": "buttons",
+                                            "buttons": ["시작하기","사용법","개발사"]
+                            }
+
                         }
     return jsonify(show_buttons)
 
