@@ -2,166 +2,167 @@
 # -*- coding: utf-8 -*-
 
 # For data load
-import urllib, json, datetime
+import urllib, json, datetime, requests, random, time
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response, send_from_directory
 from gevent.wsgi import WSGIServer
 
 app = Flask(__name__)
 
-@app.route('/')
-def hello():
-    return "안녕하세요?"
+# Variables
+#global contentTO
+#global contentFROM
+FROM = ["녹동에서","소태에서","학동증심사입구에서","남광주에서","문화전당에서","금남로4가에서","금남로5가에서","양동시장에서","돌고개에서","농성에서","화정에서","운천에서","상무에서","쌍촌에서","김대중컨벤션센터에서","공항에서","송정공원에서","광주송정에서","도산에서","평동에서"]
+TO = ["녹동까지","소태까지","학동증심사입구까지","남광주까지","문화전당까지","금남로4가까지","금남로5가까지","양동시장까지","돌고개까지","농성까지","화정까지","운천까지","상무까지","쌍촌까지","김대중컨벤션센터까지","공항까지","송정공원까지","광주송정까지","도산까지","평동까지"]
+DEFAULT = ["시작하기","사용법","개발사"]
+STATIONDIC = {u'녹동에서': 100, u'녹동까지':100, u'소태에서': 101, u'소태까지':101, u'학동증심사입구에서': 102, u'학동증심사입구까지':102, u'남광주에서': 103, u'남광주까지':103, u'문화전당에서': 104, u'문화전당까지':104, u'금남로4가에서': 105, u'금남로4가까지':105, u'금남로5가에서': 106, u'금남로5가까지':106, u'양동시장에서': 107, u'양동시장까지':107, u'돌고개에서': 108, u'돌고개까지':108, u'농성에서': 109, u'농성까지':109, u'화정에서': 110, u'화정까지':110, u'운천에서': 111, u'운천까지':111, u'상무에서': 112, u'상무까지':112, u'쌍촌에서': 113, u'쌍촌까지':113, u'김대중컨벤션센터에서': 114, u'김대중컨벤션센터까지':114, u'공항에서': 115, u'공항까지':115, u'송정공원에서': 116, u'송정공원까지':116, u'광주송정에서': 117, u'광주송정까지':117, u'도산에서': 118, u'도산까지':118, u'평동에서': 119, u'평동까지':119}
+RESTART = ["처음으로", "다시시작하기"]
+
+# StationName to Integer
 def getStationID(stationName):
     try:
-        stationIDdict =  {
-            u'녹동': 100,
-            u'소태': 101,
-            u'학동증심사입구': 102,
-            u'학동증심사': 102,
-            u'학동증':102,
-            u'학동':102,
-            u'남광주': 103,
-            u'문화전당(구도청)': 104,
-            u'문화전당': 104,
-            u'문화전':104,
-            u'문화': 104,
-            u'금남로4가' : 105,
-            u'금남4':105,
-            u'금4':105,
-            u'금남고5가' : 106,
-            u'금남5':106,
-            u'금5':106,
-            u'양동시장' : 107,
-            u'돌고개' : 108,
-            u'농성' : 109,
-            u'화정' : 110,
-            u'쌍촌' : 111,
-            u'운천' : 112,
-            u'상무' : 113,
-            u'김대중컨벤션센터(마륵)' : 114,
-            u'김대중': 114,
-            u'김대':114,
-            u'공항' : 115,
-            u'송정공원' : 116,
-            u'송정':116,
-            u'광주송정역' : 117,
-            u'광주송정':117,
-            u'광주':117,
-            u'도산' : 118,
-            u'평동' : 119,
-        }[stationName]
+        stationIDdict = STATIONDIC[stationName]
         return stationIDdict
     except:
         print "Exception non existing Station Name: ", stationName
         return None
 
-@app.route("/keyboard", methods=["GET", "POST"])
-#@app.route("/keyboard", methods=["GET"])
-def keyboard():
-    #if request.method == 'POST':
-    #    print 'POST request'
-    #else:
-    #    print 'GET request'
-    #return u"{'type':'buttons','buttons':['너는 누구니?', '사용법', '지하철']}"
-    #return '{"type":"buttons", "buttons":["ch1","ch2","ch3" ]}'
-    #return '{"type" : "buttons", "buttons" : ["어디?"]}'
-    
-    show_buttons = {
-#                        "message": {
-#                                        "text" : u"광주도시철도 카카오 플러스친구를 등록해주셔서 감사합니다.",
-#                                        "photo": {
-#                                                    "url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbPTAm36d6ux4gAV0R0ag9XT9MhJWgOGY8PyvFCa6pgptyK2Vxfw",
-#                                                    "width": 640,
-#                                                    "height": 480
-#                                        },            
-#                        },
-                        "type": "buttons",
-                        "buttons": ["시작하기","사용법","개발사"]
-                    }
-    
-    return jsonify(show_buttons)
+@app.route('/')
+def Metro():
+    url = 'http://energy.openlab.kr:3003'
+    u = urllib.urlopen(url)
+    data = u.read()
 
-@app.route("/message", methods=["POST"])
+    j=json.loads(data)
+
+    subway = j["subway"]
+    first_subway = subway[0]
+    second_subway = subway[1]
+#    print "subway location?"
+#    print subway_arr["Location"]
+#    print "\n"
+    pos = first_subway["Location"]
+    
+    return first_subway["Location"]
+
+#@app.route('/')
+#def hello():
+#    return "안녕하세요?"
+
+@app.route('/keyboard', methods=['GET'])
+def keyboard():
+#    # 바로 시작
+#    # content = request.get_json()    
+#    show_buttons = json.dumps({
+#                    # 버튼은 한 화면에 3개씩 노출
+#                    # 최대 10개 노출 가능하다는데 알 방법이 없음
+#                                "type": "buttons",
+#                                "buttons": TO
+#                    })
+#    return Response(show_buttons, mimetype='application/json')
+    # 첫 화면을 버튼으로.
+    show_buttons = json.dumps({
+                                "type": "buttons",
+                                "buttons": DEFAULT
+                    })
+    return Response(show_buttons, mimetype='application/json')
+
+#    # 첫 화면을 아무말로.
+#    response = json.dumps({"type" : "text"})
+#    return Response(response, mimetype='application/json')    
+
+#    # 과거의 영광
+#    return jsonify(show_buttons)
+
+# Main
+@app.route('/message', methods=['POST'])
 def message():
+    global contentTO, contentFROM
     dataReceive = request.get_json()
     content = dataReceive['content']
 
-    if content == u"시작하기":
-        show_buttons = {
-                            "message": {
-                                            "text": "어디에서 탑승하시나요? 옆으로 쓸어 넘겨 출발지를 찾아보세요."
-                            },
-#                                # 말로 받기?
-#                                "type": "text"
-                            # 버튼은 한 화면에 3개씩 노출
-                            "keyboard": {
-                                            "type": "buttons",
-                                            "buttons": ["녹동에서","소태에서","학동증심사입구에서","남광주에서","문화전당에서","금남로4가에서","금남로5가에서","양동시장에서","돌고개에서","농성에서","화정에서","운천에서","상무에서","쌍촌에서","김대중컨벤션센터에서","공항에서","송정공원에서","광주송정에서","도산에서","평동에서"]
-                            }
-                        }
-#        # 이렇겐 안되는데...
-#        dataReceiveStation = request.get_json()
-#        contentStation = dataReceiveStation['content']
-#        if contentStation == u"녹동":
-#                show_buttons = {
-#                                    "message": {
-#                                                    "text": "thanx"
-#                                    }
-#                                }
-                        
+    if u"시작" in content:
+        show_buttons = json.dumps({
+                                        "message": {
+                                        "text": "어디에서 탑승하시나요? 옆으로 쓸어 넘겨 출발지를 찾아보세요."
+                                    },
+                                        # 버튼은 한 화면에 3개씩 노출
+                                        # 최대 10개 노출 가능하다는데 알 방법이 없음
+                                        "keyboard": {
+                                                        "type": "buttons",
+                                                        "buttons": FROM
+                                    }
+                        })
+        return Response(show_buttons, mimetype='application/json')
+    elif u"에서" in content:
+        contentTO = content
+        show_buttons = json.dumps({
+                                        "message": {
+                                        "text": "어디까지 가시나요? 옆으로 쓸어 넘겨 도착지를 찾아보세요."
+                                    },
+                                        "keyboard": {
+                                                        "type": "buttons",
+                                                        "buttons": TO
+                                    }
+                        })
+        return Response(show_buttons, mimetype='application/json')
+    elif u"까지" in content:
+        contentFROM = content
+ 
+        directionTO = getStationID(contentTO)
+        directionFROM = getStationID(contentFROM)
+        direction = directionTO - directionFROM
+        if direction == 0:
+            show_buttons = json.dumps({
+                                            "message": {
+                                            "text": "출발역과 도착역이 같습니다. 다시 선택해주세요!"
+                                        },
+                                            "keyboard": {
+                                                        "type": "buttons",
+                                                        "buttons": FROM
+                                        }
+                            })
+            return Response(show_buttons, mimetype='application/json')
+        else:
+            print Metro()
+            show_buttons = json.dumps({
+                                            "message": {
+                                            "text": "아직 JSON을 받아오지 못했어요. 처음으로 돌아가세요."
+                                        },
+                                            "keyboard": {
+                                                        "type": "buttons",
+                                                        "buttons": RESTART
+                                        }
+                            })
+            return Response(show_buttons, mimetype='application/json')
     elif content == u"사용법":
-        show_buttons = {
+        show_buttons = json.dumps({
                             "message": {
                                             "text": "도움말인데 아직 내용은..."
                             },
                             "keyboard": {
                                             "type": "buttons",
-                                            "buttons": ["시작하기","사용법","개발사"]
+                                            "buttons": DEFAULT
                             }
 
-                        }
-    elif u"안녕" in content:
-        show_buttons = {
+                        })
+        return Response(show_buttons, mimetype='application/json')
+    elif u"처음으로" in content:
+        show_buttons = json.dumps({
                             "message": {
-                                            "text": "안녕하세요! 반갑습니다!"
-                            }
-                        }
-#    # 이렇게 놓으면 가는 녹동인지 오는 녹동인지 모른다.
-#    elif u"녹동" in content:
-#        show_buttons = {
-#                            "message": {
-#                                            "text": "어디까지 가세요?"
-#                            },
-#                            "keyboard": {
-#                                            "type": "buttons",
-#                                            "buttons": ["녹동으로","소태로","학동증심사입구로","남광주로","문화전당으로","금남로4가로","금남로5가로","양동시장으로","돌고개로","농성으로","화정으로","운천으로","상무로","쌍촌으로","김대중컨벤션센터로","공항으로","송정공원으로","광주송정으로","도산으로","평동으로"]
-#                            }
-#                        }
-    elif u"녹동에서" in content:
-        show_buttons = {
-                            "message": {
-                                            "text": "어디까지 가시나요?"
+                                            "text": "처음 화면입니다. 무엇을 할까요?"
                             },
+
                             "keyboard": {
                                             "type": "buttons",
-                                            "buttons": ["녹동으로","소태로","학동증심사입구로","남광주로","문화전당으로","금남로4가로","금남로5가로","양동시장으로","돌고개로","농성으로","화정으로","운천으로","상무로","쌍촌으로","김대중컨벤션센터로","공항으로","송정공원으로","광주송정으로","도산으로","평동으로"]
+                                            "buttons": DEFAULT
                             }
-                        }
-    elif u"소태로" in content:
-        show_buttons = {
-                            "message": {
-                                            "text": "현재 몇분 남았습니다"
-                            },
-                            "keyboard": {
-                                            "type": "buttons",
-                                            "buttons": ["시작하기","사용법","개발사"]
-                            }
-                        }
+                        })
+        return Response(show_buttons, mimetype='application/json')
     elif u"개발사" in content:
-        show_buttons = {
+        show_buttons = json.dumps({
                             "message": {
-                                            "text": "KETI 전자부품연구원\n임베디드 & SW 연구센터", 
+                                            "text": "KETI 전자부품연구원\n임베디드 & SW 연구센터",
                                             "photo": {
                                                         "url": "http://www.keti.re.kr/_upload/editor/2016/12/09/recruit_main-1481273868_5aeb7d6cabb864d7c90a25ca125a930d.bmp",
                                                         "width": 640,
@@ -172,9 +173,11 @@ def message():
                                             "type": "buttons",
                                             "buttons": ["시작하기","사용법","개발사"]
                             }                            
-                        }
+                        })
+        return Response(show_buttons, mimetype='application/json')
+
     else:        
-        show_buttons = {
+        show_buttons = json.dumps({
                             "message": {
                                             "text": "이해하지 못했어요. 무엇을 할까요?"    
                             },
@@ -182,9 +185,10 @@ def message():
                                             "type": "buttons",
                                             "buttons": ["시작하기","사용법","개발사"]
                             }
+                        })
+        return Response(show_buttons, mimetype='application/json')
+#    return jsonify(show_buttons)
 
-                        }
-    return jsonify(show_buttons)
 
 if __name__ == '__main__':
     http_server= WSGIServer(('', 3441), app)
