@@ -1,13 +1,17 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # For data load
-import urllib, json, datetime, requests, random, time
+import urllib, json, datetime, requests, random, time, threading, sys
 
 from flask import Flask, request, jsonify, Response, send_from_directory
 from gevent.wsgi import WSGIServer
 
 app = Flask(__name__)
+
+# For default encoding to utf-8 instead ascii
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 # Variables
 #global contentTO
@@ -16,6 +20,7 @@ FROM = ["녹동에서","소태에서","학동증심사입구에서","남광주�
 TO = ["녹동까지","소태까지","학동증심사입구까지","남광주까지","문화전당까지","금남로4가까지","금남로5가까지","양동시장까지","돌고개까지","농성까지","화정까지","운천까지","상무까지","쌍촌까지","김대중컨벤션센터까지","공항까지","송정공원까지","광주송정까지","도산까지","평동까지"]
 DEFAULT = ["시작하기","사용법","개발사"]
 STATIONDIC = {u'녹동에서': 100, u'녹동까지':100, u'소태에서': 101, u'소태까지':101, u'학동증심사입구에서': 102, u'학동증심사입구까지':102, u'남광주에서': 103, u'남광주까지':103, u'문화전당에서': 104, u'문화전당까지':104, u'금남로4가에서': 105, u'금남로4가까지':105, u'금남로5가에서': 106, u'금남로5가까지':106, u'양동시장에서': 107, u'양동시장까지':107, u'돌고개에서': 108, u'돌고개까지':108, u'농성에서': 109, u'농성까지':109, u'화정에서': 110, u'화정까지':110, u'운천에서': 111, u'운천까지':111, u'상무에서': 112, u'상무까지':112, u'쌍촌에서': 113, u'쌍촌까지':113, u'김대중컨벤션센터에서': 114, u'김대중컨벤션센터까지':114, u'공항에서': 115, u'공항까지':115, u'송정공원에서': 116, u'송정공원까지':116, u'광주송정에서': 117, u'광주송정까지':117, u'도산에서': 118, u'도산까지':118, u'평동에서': 119, u'평동까지':119}
+STATIONDICTOSTR = {100: u'녹동', 101: u'소태', 102: u'학동증심사입구', 103: u'남광주', 104: u'문화전당', 105: u'금남로4가', 106: u'금남로5가', 107: u'양동시장', 108: u'돌고개', 109: u'농성', 110: u'화정', 111: u'운천', 112: u'상무', 113: u'쌍촌', 114: u'김대중컨벤션센터', 115: u'공항', 116: u'송정공원', 117: u'광주송정', 118: u'도산', 119: u'평동',} 
 RESTART = ["처음으로", "다시시작하기"]
 
 # StationName to Integer
@@ -27,23 +32,93 @@ def getStationID(stationName):
         print "Exception non existing Station Name: ", stationName
         return None
 
-@app.route('/')
+# Integer to StationName
+def getIntegerID(stationNum):
+    try:
+        stationIDdicttoSTR = STATIONDICTOSTR[stationNum]
+        return stationIDdicttoSTR
+    except:
+        print "Exception non existing Station Name: ", stationNum
+        return None
+
+# Metro Information
 def Metro():
+    # Port number 변경될 수 있음
     url = 'http://energy.openlab.kr:3003'
     u = urllib.urlopen(url)
     data = u.read()
-
     j=json.loads(data)
-
+    i=0
     subway = j["subway"]
-    first_subway = subway[0]
-    second_subway = subway[1]
+#    tmpstr = "subinfo"
+    subinfo = []
+    traininfo = []
+    trainloc = []
+    traindir = []
+    humavg = []
+    tempavg = []
+    # initialization
+    for l in range(0,7):
+        traininfo.append(l)
+        trainloc.append(l)
+        traindir.append(l)
+        humavg.append(l)
+        tempavg.append(l)
+
+    for i in range(0,5):
+#        if subway[i] == None:
+#            # else 이하 내용 쓸 예정
+#            return
+#        else:
+        subinfo = subway[i]
+        # 현재 위치를 받아야함. 어디서 오는지 알아야 하니까.
+        # 는 나중에 해도 되겠다. 밑에서.
+        traininfo[i] = subinfo["Train"]
+        trainloc[i] = subinfo["Location"]
+        traindir[i] = subinfo["work"]
+        humavg[i] = (subinfo["T1HUM"] + subinfo["T2HUM"] + subinfo["T3HUM"] + subinfo["T4HUM"]) / 4
+        tempavg[i] = (subinfo["T1TEMP"] + subinfo["T2TEMP"] + subinfo["T3TEMP"] + subinfo["T4TEMP"]) / 4
+
+    try:
+        threading.Timer(10,Metro).start()
+#        # time.sleep을 걸지 않으면 try-except를 거치지 않는다는데
+#        # 막상 걸면 sys.exit()가 수행이 안되고 interrupt를 줘도 무응답으로 일관함
+#        # 어떤 interrupt를 줘도 무응답이어서 연결 자체를 종료하고 재접속해야함
+#        # 어떻게 해결하면 좋을까?
+#        while True: time.sleep(100)
+    except (KeyboardInterrupt, SystemExit):
+        print '\n! Received keyboard interrupt, quitting threads.\n'
+    
+    print trainloc[0], trainloc[1]
+    return (traininfo, trainloc, traindir, humavg, tempavg)
+#            tmpint = "%d" %(i)
+#            tmp = tmpstr + tmpint
+#            tmp = subway[i]
+#            subinfo = subway[i]
+             
+      
+#    first_subway = subway[0]
+#    second_subway = subway[1]
+
 #    print "subway location?"
 #    print subway_arr["Location"]
 #    print "\n"
-    pos = first_subway["Location"]
-    
-    return first_subway["Location"]
+#    pos = first_subway["Location"]
+
+
+#    try:
+#        threading.Timer(10,Metro).start()
+#        # time.sleep을 걸지 않으면 try-except를 거치지 않는다는데
+#        # 막상 걸면 sys.exit()가 수행이 안되고 interrupt를 줘도 무응답으로 일관함
+#        # 어떤 interrupt를 줘도 무응답이어서 연결 자체를 종료하고 재접속해야함
+#        # 어떻게 해결하면 좋을까?
+#        while True: time.sleep(100)
+#    except (KeyboardInterrupt, SystemExit):
+#        print '\n! Received keyboard interrupt, quitting threads.\n'
+#        # 여기서 오류로 발생하는 global 변수와 sys의 관계는 무엇인가?
+#        sys.exit()
+#    print pos
+#    return first_subway["Location"]
 
 #@app.route('/')
 #def hello():
@@ -124,10 +199,44 @@ def message():
                             })
             return Response(show_buttons, mimetype='application/json')
         else:
-            print Metro()
+            subinformation = []
+            subinformation = Metro()
+    
+            traininfo = []
+            trainloc = []
+            traindir = []
+            humavg = []
+            tempavg = []
+            # initialization
+            for l in range(0,7):
+                traininfo[l] = subinformation[traininfo[l]]
+#                traininfo.append(l)
+#                trainloc.append(l)
+#                traindir.append(l)
+#                humavg.append(l)
+#                tempavg.append(l)
+
+            
+#            traininfo = subinformation[0]
+#            trainloc = subinformation[1]
+#            traindir = subinformation[2]
+#            humavg = subinformation[3]
+#            tempavg = subinformation[4]
+            
+#            station_Num = trainloc
+#            station_Num = Metro()
+#            station_ASCII = getIntegerID(station_Num)
+#            station_Str = str(unicode(station_ASCII))
+            
+#            # 출력 테스트
+#            text1 = "지금 열차는 "
+#            text2 = station_Str
+#            text3 = " 에 있어요."
+#            text = text1 + text2 + text3
+            text = "%d" % (traininfo[6])
             show_buttons = json.dumps({
                                             "message": {
-                                            "text": "아직 JSON을 받아오지 못했어요. 처음으로 돌아가세요."
+                                            "text": text
                                         },
                                             "keyboard": {
                                                         "type": "buttons",
