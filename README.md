@@ -7,3 +7,17 @@
 ***Just modify to use buttons. Not calling JSON data yet.\
 7/18 Third commit\
 ***Call JSON data successful. But returnable data are still confusing me.
+7/20 Fourth commit\
+***Finally, I am done.
+
+# Function
+  1. Use 3 buttons 'START', 'MANUAL', 'DEVELOPER'
+  2. First, 'START' buttons is start. 
+  3. You can use 20 buttons for selecting station.
+  4. If you select departure button, you can select destination too.
+  5. So you can know Gwangju city train's various information.
+     For example, You can see average humidity, average temperature, train arrival time and so on.
+  6. That's all!
+     Play our service.
+     If you have requested term, Comment me!
+     Thanks.
