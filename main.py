@@ -233,19 +233,19 @@ def message():
                 # Probability for boarding
                 # Pass by or not
                 if directionFROM < trainloc[i] and traindir[i] == 0:
-                    text2_2 = "역에 있는 상행 열차는 약 %d분 전에 이 역을 지나갔습니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_humavg, all_train_tempavg)
+                    text2_2 = "역에 있는 상행 열차는 약 %d분 전에 이 역을 지나갔습니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)
                     text_arr[i] = text2_1 + text2_2
                     text2 = text2 + text_arr[i]
                 elif directionFROM > trainloc[i] and traindir[i] == 0:
-                    text2_2 = "역에 있는 상행 열차는 약 %d분 후에 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_humavg, all_train_tempavg)
+                    text2_2 = "역에 있는 상행 열차는 약 %d분 후에 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)
                     text_arr[i] = text2_1 + text2_2
                     text2 = text2 + text_arr[i]
                 elif directionFROM < trainloc[i] and traindir[i] == 1:
-                    text2_2 = "역에 있는 하행 열차는 약 %d분 후에 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_humavg, all_train_tempavg)
+                    text2_2 = "역에 있는 하행 열차는 약 %d분 후에 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)
                     text_arr[i] = text2_1 + text2_2
                     text2 = text2 + text_arr[i]
                 elif directionFROM > trainloc[i] and traindir[i] == 1:
-                    text2_2 = "역에 있는 하행 열차는 약 %d분 전에 이 역을 지나갔습니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_humavg, all_train_tempavg)
+                    text2_2 = "역에 있는 하행 열차는 약 %d분 전에 이 역을 지나갔습니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)
                     text_arr[i] = text2_1 + text2_2
                     text2 = text2 + text_arr[i]
                 elif directionFROM == trainloc[i]:
