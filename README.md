@@ -17,7 +17,6 @@
 >  4. If you select departure button, you can select destination too.\
 >  5. So you can know Gwangju city train's various information.\
 >     For example, You can see average humidity, average temperature, train arrival time and so on.\
->  6. That's all!\
->     Play our service.\
->     If you have requested term, Comment me!\
+>  6. That's all! Play our service.\
+>     If you have requested term, Comment me JeonBot!\
 >     Thanks.
