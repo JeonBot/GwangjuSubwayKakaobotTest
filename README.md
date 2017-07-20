@@ -8,7 +8,7 @@
 7/18 Third commit\
 ***   Call JSON data successful. But returnable data are still confusing me.\
 7/20 Fourth commit\
-***   Finally, I am done.
+***   Finally, I am done. And now, I will modify train arrival information. cuz remove unnessasary information in contents.
 
 # Function
 >  1. Use 3 buttons 'START', 'MANUAL', 'DEVELOPER'
