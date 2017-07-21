@@ -1,6 +1,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+######################################## BASE CODE ########################################
 # For data load
 import urllib, json, datetime, requests, random, time, threading, sys
 
@@ -38,7 +39,11 @@ def getIntegerID(stationNum):
     except:
         print "Exception non existing Station Name: ", stationNum
         return None
+########################################-----------########################################
 
+
+
+######################################## FOR METRO ########################################
 # Metro Information
 def Metro():
     # Changeable port number
@@ -92,11 +97,19 @@ def Metro():
     except (KeyboardInterrupt, SystemExit):
         print '\n! Received keyboard interrupt, quitting threads.\n'
     return (traininfo, trainloc, traindir, humavg, tempavg, i)
+########################################-----------########################################
 
+
+
+########################################   WH AT?  ########################################
 #@app.route('/')
 #def hello():
 #    return "안녕하세요?"
+########################################-----------########################################
 
+
+
+######################################## FOR START ########################################
 @app.route('/keyboard', methods=['GET'])
 def keyboard():
     show_buttons = json.dumps({
@@ -123,8 +136,11 @@ def keyboard():
 
 #    # 과거의 영광
 #    return jsonify(show_buttons)
+########################################-----------########################################
 
 
+
+######################################## MAIN CODE ########################################
 # Main
 @app.route('/message', methods=['POST'])
 def message():
@@ -140,8 +156,6 @@ def message():
                                         "message": {
                                         "text": "어디에서 출발하시나요? 옆으로 쓸어 넘겨 출발지를 찾아보세요."
                                     },
-                                        # 버튼은 한 화면에 3개씩 노출
-                                        # 최대 10개 노출 가능하다는데 어떻게하지?
                                         "keyboard": {
                                                         "type": "buttons",
                                                         "buttons": FROM
@@ -169,7 +183,34 @@ def message():
         directionFROM = getStationID(contentFROM)
         directionTO = getStationID(contentTO)
         direction = directionFROM - directionTO
-        
+
+
+        # To total
+        i = 0
+        # Metro array call and Metro return values load
+        subinformation = []
+        subinformation = Metro()
+        # Array call
+        traininfo = []
+        trainloc = []
+        traindir = []
+        humavg = []
+        tempavg = []
+        text_arr = []
+        minute = []
+        # List save
+        traininfo = subinformation[0]
+        trainloc = subinformation[1]
+        traindir = subinformation[2]
+        humavg = subinformation[3]
+        tempavg = subinformation[4]
+        total = subinformation[5]
+        # initialization            
+        for l in range(0,total):
+            text_arr.append(l)
+            minute.append(l)        
+
+
         # When someone is click same buttons
         if direction == 0:
             show_buttons = json.dumps({
@@ -182,37 +223,40 @@ def message():
                                         }
                             })
             return Response(show_buttons, mimetype='application/json')
+        elif direction < 0:
         # direction != 0
-        else:
-            # To total
-            i = 0
-            # Metro array call and Metro return values load
-            subinformation = []
-            subinformation = Metro()
-    
-            # Array call
-            traininfo = []
-            trainloc = []
-            traindir = []
-            humavg = []
-            tempavg = []
-            text_arr = []
-                        
-            # List save
-            traininfo = subinformation[0]
-            trainloc = subinformation[1]
-            traindir = subinformation[2]
-            humavg = subinformation[3]
-            tempavg = subinformation[4]
-            total = subinformation[5]
-
-            # initialization            
-            for l in range(0,total):
-                text_arr.append(l)
+#        else:
+#            # To total
+#            i = 0
+#            # Metro array call and Metro return values load
+#            subinformation = []
+#            subinformation = Metro()
+#    
+#            # Array call
+#            traininfo = []
+#            trainloc = []
+#            traindir = []
+#            humavg = []
+#            tempavg = []
+#            text_arr = []
+#            minute = []
+#                        
+#            # List save
+#            traininfo = subinformation[0]
+#            trainloc = subinformation[1]
+#            traindir = subinformation[2]
+#            humavg = subinformation[3]
+#            tempavg = subinformation[4]
+#            total = subinformation[5]
+#
+#            # initialization            
+#            for l in range(0,total):
+#                text_arr.append(l)
+#                minute.append(l)
  
             # Output information string part of part
             text0 = "상행 : 녹동(소태) → 평동\n하행 : 평동 → 녹동(소태)\n"
-            text1 = "운행 중인 열차는 %d대 입니다.\n――――――――\n" % (total)
+            text1 = "――――――――\n사용자의 출발지 : %s\n사용자의 목적지 : %s\n――――――――\n" % ((str(unicode(contentFROM)).replace("에서"," ")), (str(unicode(contentTO)).replace("까지"," ")))
             text2 = ""
             
             # JSON load and final String maker
@@ -228,32 +272,93 @@ def message():
                 all_train_tempavg = tempavg[i]
                 
                 # Lead time
-                minute = abs((directionFROM - trainloc[i]) * 2)
-                
+                minute[i] = abs((directionFROM - trainloc[i]) * 2)
+ 
+                if trainloc[i] < directionFROM and traindir[i] == 0:
+                    text2_2 = "역에 있는 상행 열차는 약 %d분 후 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute[i], all_train_tempavg, all_train_humavg)
+                    text_arr[i] = text2_1 + text2_2
+#                    if minute[i] > minute[i+1] and minute[i+1] != None:          
+#                        tmp = text_arr[i]
+#                        text_arr[i] = text_arr[i-1]
+#                        text_arr[i-1] = tmp
+#                    if trainloc[i-1] is None:
+#                        text2 = text2 + text_arr[i]
+#                    elif trainloc[i-1] is not None and trainloc[i-1] > trainloc[i]:
+#                        tmp = text_arr[i]
+#                        text_arr[i] = text_arr[i-1]
+#                        text_arr[i-1] = tmp                            
+                    text2 = text2 + text_arr[i]
+
+#           # JSON load and final String maker
+#            for i in range(total):
+#                # Integer station to string station
+#                all_train_pos = getIntegerID(trainloc[i])
+#
+#                # Output station information string part of part
+#                text2_1 = str(all_train_pos)
+#
+#                # Load hum and temp data
+#                all_train_humavg = humavg[i]
+#                all_train_tempavg = tempavg[i]
+#
+#                # Lead time
+#                minute = abs((directionFROM - trainloc[i]) * 2)
+#
+#                if trainloc[i] > directionFROM and traindir[i] == 1:
+#                    text2_2 = "역에 있는 하행 열차는 약 %d분 후 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)
+#                    text_arr[i] = text2_1 + text2_2
+#                    text2 = text2 + text_arr[i]
+
+
+
+#                elif trainloc[i] > directionFROM and traindir[i] == 0:               
+#                    text2 = "열차 정보가 존재하지 않습니다.\n――――――――\n"
+
                 # Probability for boarding
                 # Pass by or not
-                if directionFROM < trainloc[i] and traindir[i] == 0:
-                    text2_2 = "역에 있는 상행 열차는 약 %d분 전에 이 역을 지나갔습니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)
-                    text_arr[i] = text2_1 + text2_2
-                    text2 = text2 + text_arr[i]
-                elif directionFROM > trainloc[i] and traindir[i] == 0:
-                    text2_2 = "역에 있는 상행 열차는 약 %d분 후에 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)
-                    text_arr[i] = text2_1 + text2_2
-                    text2 = text2 + text_arr[i]
-                elif directionFROM < trainloc[i] and traindir[i] == 1:
-                    text2_2 = "역에 있는 하행 열차는 약 %d분 후에 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)
-                    text_arr[i] = text2_1 + text2_2
-                    text2 = text2 + text_arr[i]
-                elif directionFROM > trainloc[i] and traindir[i] == 1:
-                    text2_2 = "역에 있는 하행 열차는 약 %d분 전에 이 역을 지나갔습니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)
-                    text_arr[i] = text2_1 + text2_2
-                    text2 = text2 + text_arr[i]
-                elif directionFROM == trainloc[i]:
-                    text2 = "열차가 곧 도착하거나 지나갔습니다.\n――――――――\n"
+#                if directionFROM < trainloc[i] and traindir[i] == 0:
+#                    text2_2 = "역에 있는 상행 열차는 약 %d분 전에 이 역을 지나갔습니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)
+#                    text_arr[i] = text2_1 + text2_2
+#                    text2 = text2 + text_arr[i]
+#                elif directionFROM > trainloc[i] and traindir[i] == 0:
+#                    text2_2 = "역에 있는 상행 열차는 약 %d분 후에 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)
+#                    text_arr[i] = text2_1 + text2_2
+#                    text2 = text2 + text_arr[i]
+#                elif directionFROM < trainloc[i] and traindir[i] == 1:
+#                    text2_2 = "역에 있는 하행 열차는 약 %d분 후에 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)
+#                    text_arr[i] = text2_1 + text2_2
+#                    text2 = text2 + text_arr[i]
+#                elif directionFROM > trainloc[i] and traindir[i] == 1:
+#                    text2_2 = "역에 있는 하행 열차는 약 %d분 전에 이 역을 지나갔습니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)
+#                    text_arr[i] = text2_1 + text2_2
+#                    text2 = text2 + text_arr[i]
+#                elif directionFROM == trainloc[i]:
+#                    text2 = "열차가 곧 도착하거나 지나갔습니다.\n――――――――\n"
+#                else:
+#                    text2 = "열차 정보가 존재하지 않습니다.\n――――――――\n"
+
+
+
+#                if direction > 0 and directionFROM > trainloc[i] and traindir[i] == 1:
+#                    text2_2 = "역에 있는 하행 열차는 약 %d분 후에 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)
+#                    text_arr[i] = text2_1 + text2_2
+#                    text2 = text2 + text_arr[i]
+#
+#                # direction(출발지 - 목적지) < 0이면 상행이고 work == traindir == 0
+#                # trainloc[i] < directionFROM이면 열차 위치가 출발지를 지나지 않은 것
+#                elif direction < 0 and directionFROM > trainloc[i] and traindir[i] == 0:
+#                    text2_2 = "역에 있는 상행 열차는 약 %d분 후에 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute, all_train_tempavg, all_train_humavg)                    
+#                    text_arr[i] = text2_1 + text2_2
+#                    text2 = text2 + text_arr[i]
+#                elif directionFROM == trainloc[i]:
+#                    text2 = "열차가 곧 도착하거나 지나갔습니다.\n――――――――\n"
+#
+#                else:
+#                    text2 = "열차 정보가 존재하지 않습니다.\n――――――――\n"
             
-            # Complete output string
+                # Complete output string
                 text = text0 + text1 + text2
-    
+
                 show_buttons = json.dumps({
                                                 "message": {
                                                 "text": text
@@ -263,7 +368,56 @@ def message():
                                                                 "buttons": RESTART
                                                 }
                                 })
-        return Response(show_buttons, mimetype='application/json')
+            return Response(show_buttons, mimetype='application/json')
+        elif direction > 0:
+            #####
+            # Output information string part of part
+            text0 = "상행 : 녹동(소태) → 평동\n하행 : 평동 → 녹동(소태)\n"
+            text1 = "――――――――\n사용자의 출발지 : %s\n사용자의 목적지 : %s\n――――――――\n" % ((str(unicode(contentFROM)).replace("에서"," ")), (str(unicode(contentTO)).replace("까지"," ")))
+            text2 = ""
+
+            # JSON load and final String maker
+            for i in range(total):
+                # Integer station to string station
+                all_train_pos = getIntegerID(trainloc[i])
+
+                # Output station information string part of part
+                text2_1 = str(all_train_pos)
+
+                # Load hum and temp data
+                all_train_humavg = humavg[i]
+                all_train_tempavg = tempavg[i]
+
+                # Lead time
+                minute[i] = abs((directionFROM - trainloc[i]) * 2)
+ 
+                if trainloc[i] > directionFROM and traindir[i] == 1:
+                    text2_2 = "역에 있는 하행 열차는 약 %d분 후 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (minute[i], all_train_tempavg, all_train_humavg)
+                    text_arr[i] = text2_1 + text2_2
+#                    if minute[i] > minute[i+1] and minute[i+1] != None:          
+#                        tmp = text_arr[i]
+#                        text_arr[i] = text_arr[i-1]
+#                        text_arr[i-1] = tmp
+#                    if trainloc[i-1] is None:
+#                        text2 = text2 + text_arr[i]
+#                    elif trainloc[i-1] is not None and trainloc[i-1] > trainloc[i]:
+#                        tmp = text_arr[i]
+#                        text_arr[i] = text_arr[i-1]
+#                        text_arr[i-1] = tmp                            
+                    text2 = text2 + text_arr[i]
+
+                text = text0 + text1 + text2
+
+                show_buttons = json.dumps({
+                                                "message": {
+                                                "text": text
+                                            },
+                                                "keyboard": {
+                                                                "type": "buttons",
+                                                                "buttons": RESTART
+                                                }
+                                })
+            return Response(show_buttons, mimetype='application/json')
     elif content == u"사용법":
         show_buttons = json.dumps({
                             "message": {
@@ -300,7 +454,7 @@ def message():
                             },
                             "keyboard": {
                                             "type": "buttons",
-                                            "buttons": ["시작하기","사용법","개발사"]
+                                            "buttons": DEFAULT
                             }                            
                         })
         return Response(show_buttons, mimetype='application/json')
@@ -312,14 +466,18 @@ def message():
                             },
                             "keyboard": {
                                             "type": "buttons",
-                                            "buttons": ["시작하기","사용법","개발사"]
+                                            "buttons": DEFAULT
                             }
                         })
         return Response(show_buttons, mimetype='application/json')
-
 #    # 과거의 영광2
 #    return jsonify(show_buttons)
+########################################-----------########################################
 
+
+
+########################################  RUNNING  ########################################
 if __name__ == '__main__':
     http_server= WSGIServer(('', 3441), app)
     http_server.serve_forever()
+########################################-----------########################################
