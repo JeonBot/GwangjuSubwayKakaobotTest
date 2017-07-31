@@ -374,7 +374,7 @@ def message():
     elif content == u"사용법":
         show_buttons = json.dumps({
                             "message": {
-                                            "text": "도움말인데 아직 내용은..."
+                                            "text": "현재 도움말 준비 중 입니다."
                             },
                             "keyboard": {
                                             "type": "buttons",
