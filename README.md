@@ -15,6 +15,8 @@
 ***   Sort is working well. My plan is add exception situation.\
 7/31 Seventh commit\
 ***   Help comment is revised.\
+8/2 Eighth commit\
+***   main.py's file name is changed. cuz just for classify.\
 
 # Function
 >  1. Use 3 buttons 'START', 'MANUAL', 'DEVELOPER'
