@@ -16,7 +16,9 @@
 7/31 Seventh commit\
 ***   Help comment is revised.\
 8/2 Eighth commit\
-***   main.py's file name is changed. cuz just for classify.\
+***   main.py's file name is changed to kakao_bot.py. cuz just for classify.\
+8/3 Ninth commit\
+***   Comment's contents is revised a little.\
 
 # Function
 >  1. Use 3 buttons 'START', 'MANUAL', 'DEVELOPER'
