@@ -147,8 +147,6 @@ def keyboard():
 #    response = json.dumps({"type" : "text"})
 #    return Response(response, mimetype='application/json')    
 
-#    # 과거의 영광
-#    return jsonify(show_buttons)
 ########################################-----------########################################
 
 
@@ -423,8 +421,7 @@ def message():
                             }
                         })
         return Response(show_buttons, mimetype='application/json')
-#    # 과거의 영광2
-#    return jsonify(show_buttons)
+
 ########################################-----------########################################
 
 
