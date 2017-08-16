@@ -1,0 +1,464 @@
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+######################################## BASE CODE ########################################
+# For data load
+import urllib, json, datetime, requests, random, time, threading, sys
+
+from flask import Flask, request, jsonify, Response, send_from_directory
+from gevent.wsgi import WSGIServer
+
+app = Flask(__name__)
+
+################################################################################################################################################################ 
+# global subinformation = (traininfo, trainloc, traindir, humavg, tempavg, i)
+################################################################################################################################################################
+# For default encoding to utf-8 instead ascii
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+# Static list
+FROM = ["녹동에서","소태에서","학동증심사입구에서","남광주에서","문화전당에서","금남로4가에서","금남로5가에서","양동시장에서","돌고개에서","농성에서","화정에서","운천에서","상무에서","쌍촌에서","김대중컨벤션센터에서","공항에서","송정공원에서","광주송정에서","도산에서","평동에서"]
+TO = ["녹동까지","소태까지","학동증심사입구까지","남광주까지","문화전당까지","금남로4가까지","금남로5가까지","양동시장까지","돌고개까지","농성까지","화정까지","운천까지","상무까지","쌍촌까지","김대중컨벤션센터까지","공항까지","송정공원까지","광주송정까지","도산까지","평동까지"]
+DEFAULT = ["열차 검색 시작하기","역 정보 확인하기","개발사"]
+STATIONDIC = {u'녹동에서': 100, u'녹동까지':100, u'소태에서': 101, u'소태까지':101, u'학동증심사입구에서': 102, u'학동증심사입구까지':102, u'남광주에서': 103, u'남광주까지':103, u'문화전당에서': 104, u'문화전당까지':104, u'금남로4가에서': 105, u'금남로4가까지':105, u'금남로5가에서': 106, u'금남로5가까지':106, u'양동시장에서': 107, u'양동시장까지':107, u'돌고개에서': 108, u'돌고개까지':108, u'농성에서': 109, u'농성까지':109, u'화정에서': 110, u'화정까지':110, u'운천에서': 111, u'운천까지':111, u'상무에서': 112, u'상무까지':112, u'쌍촌에서': 113, u'쌍촌까지':113, u'김대중컨벤션센터에서': 114, u'김대중컨벤션센터까지':114, u'공항에서': 115, u'공항까지':115, u'송정공원에서': 116, u'송정공원까지':116, u'광주송정에서': 117, u'광주송정까지':117, u'도산에서': 118, u'도산까지':118, u'평동에서': 119, u'평동까지':119}
+STATIONDICTOSTR = {100: u'녹동', 101: u'소태', 102: u'학동증심사입구', 103: u'남광주', 104: u'문화전당', 105: u'금남로4가', 106: u'금남로5가', 107: u'양동시장', 108: u'돌고개', 109: u'농성', 110: u'화정', 111: u'운천', 112: u'상무', 113: u'쌍촌', 114: u'김대중컨벤션센터', 115: u'공항', 116: u'송정공원', 117: u'광주송정', 118: u'도산', 119: u'평동',} 
+RESTART = ["처음으로", "열차 검색 다시 시작"]
+STATIONINFO = ["녹동역","소태역","학동증심사입구역","남광주역","문화전당역","금남로4가역","금남로5가역","양동시장역","돌고개역","농성역","화정역","운천역","상무역","쌍촌역","김대중컨벤션센터역","공항역","송정공원역","광주송정역","도산역","평동역"]
+# StationName to Integer
+def getStationID(stationName):
+    try:
+        stationIDdict = STATIONDIC[stationName]
+        return stationIDdict
+    except:
+        print "Exception non existing Station Name: ", stationName
+        return None
+
+# Integer to StationName
+def getIntegerID(stationNum):
+    try:
+        stationIDdicttoSTR = STATIONDICTOSTR[stationNum]
+        return stationIDdicttoSTR
+    except:
+        print "Exception non existing Station Name: ", stationNum
+        return None
+########################################-----------########################################
+
+
+
+######################################## FOR METRO ########################################
+# Metro Information
+def Metro():
+################################################################################################################################################################
+#    global subinformation
+#    subinformation = []
+################################################################################################################################################################
+    # Changeable port number
+    url = 'http://energy.openlab.kr:3001'
+    # url = 'http://energy.openlab.kr:3002'
+    # url = 'http://energy.openlab.kr:3003'
+    
+    # Load and Save data
+    u = urllib.urlopen(url)
+#    if u is None:
+    data = u.read()
+    j = json.loads(data)    
+    subway = j["subway"]
+
+    if subway is not None:
+        # Total subway
+        i = 0
+
+        # Array call
+        subinfo = []
+        traininfo = []
+        trainloc = []
+        traindir = []
+        humavg = []
+        tempavg = []
+    
+        # initialization
+        for l in range(0,7):
+            subinfo.append(l)
+            traininfo.append(l)
+            trainloc.append(l)
+            traindir.append(l)
+            humavg.append(l)
+            tempavg.append(l)
+        
+        # JSON call and Threading
+        try:
+            for i in range(0,7):
+                if subway[i] != None:
+                    subinfo = subway[i]
+                    traininfo[i] = subinfo["Train"]
+                    trainloc[i] = subinfo["Location"]
+                    traindir[i] = subinfo["work"]
+                    humavg[i] = (subinfo["T1HUM"] + subinfo["T2HUM"] + subinfo["T3HUM"] + subinfo["T4HUM"]) / 4
+                    tempavg[i] = (subinfo["T1TEMP"] + subinfo["T2TEMP"] + subinfo["T3TEMP"] + subinfo["T4TEMP"]) / 4
+        except (ValueError, IndexError) as e:
+            pass
+################################################################################################################################################################
+#       try:
+#           threading.Timer(10,Metro).start()
+#            # time.sleep을 걸지 않으면 try-except를 거치지 않는다는데
+#           # 막상 걸면 sys.exit()가 수행이 안되고 interrupt를 줘도 무응답으로 일관함
+#           # 어떤 interrupt를 줘도 무응답이어서 연결 자체를 종료하고 재접속해야함
+#           # 어떻게 해결하면 좋을까?
+#           while True: time.sleep(100)
+#       except (KeyboardInterrupt, SystemExit):
+#           print '\n! Received keyboard interrupt, quitting threads.\n'
+################################################################################################################################################################
+        subinformation = (traininfo, trainloc, traindir, humavg, tempavg, i)
+#       return (traininfo, trainloc, traindir, humavg, tempavg, i)
+        return subinformation
+    else:
+        show_buttons = json.dumps({
+                                        "message": {
+                                        "text": "현재 열차 정보를 받아올 수 없습니다."
+                                    },
+                                        "keyboard": {
+                                                        "type": "buttons",
+                                                        "buttons": RESTART
+                                        }
+                        })
+        return Response(show_buttons, mimetype='application/json')
+        
+########################################-----------########################################
+
+
+
+########################################   WH AT?  ########################################
+#@app.route('/')
+#def hello():
+#    return "안녕하세요?"
+########################################-----------########################################
+
+
+
+######################################## FOR START ########################################
+@app.route('/keyboard', methods=['GET'])
+def keyboard():
+    show_buttons = json.dumps({
+                                "type": "buttons",
+                                "buttons": DEFAULT
+                    })
+    return Response(show_buttons, mimetype='application/json')
+
+
+#    # 바로 시작
+#    # content = request.get_json()    
+#    show_buttons = json.dumps({
+#                    # 버튼은 한 화면에 3개씩 노출
+#                    # 최대 10개 노출 가능하다는데 알 방법이 없음
+#                                "type": "buttons",
+#                                "buttons": TO
+#                    })
+#    return Response(show_buttons, mimetype='application/json')
+
+
+#    # 첫 화면을 아무말로.
+#    response = json.dumps({"type" : "text"})
+#    return Response(response, mimetype='application/json')    
+
+########################################-----------########################################
+
+
+
+######################################## MAIN CODE ########################################
+# Main
+@app.route('/message', methods=['POST'])
+def message():
+    # Global variable for direction
+    global contentTO, contentFROM
+    
+    # Load of user's selected button
+    dataReceive = request.get_json()
+    content = dataReceive['content']
+
+    if u"시작" in content:
+        show_buttons = json.dumps({
+                                        "message": {
+                                        "text": "어디에서 출발하시나요? 옆으로 쓸어 넘겨 출발지를 찾아보세요."
+                                    },
+                                        "keyboard": {
+                                                        "type": "buttons",
+                                                        "buttons": FROM
+                                    }
+                        })
+        return Response(show_buttons, mimetype='application/json')
+    elif u"에서" in content:
+        # user's selected departure
+        contentFROM = content
+        show_buttons = json.dumps({
+                                        "message": {
+                                        "text": "어디까지 가시나요? 옆으로 쓸어 넘겨 도착지를 찾아보세요."
+                                    },
+                                        "keyboard": {
+                                                        "type": "buttons",
+                                                        "buttons": TO
+                                    }
+                        })
+        return Response(show_buttons, mimetype='application/json')
+    elif u"까지" in content:
+        # user's selected destination        
+        contentTO = content
+ 
+        # transform to integer
+        directionFROM = getStationID(contentFROM)
+        directionTO = getStationID(contentTO)
+        direction = directionFROM - directionTO
+
+
+        # To total
+        i = 0
+
+################################################################################################################################################################
+        # Metro array call and Metro return values load
+#        subinformation = []
+        subinformation = Metro()
+################################################################################################################################################################
+        # Array call
+        traininfo = []
+        trainloc = []
+        traindir = []
+        humavg = []
+        tempavg = []
+        text_arr = []
+        minute = []
+        swap = []
+        # List save
+################################################################################################################################################################
+#        print subinformation[0]
+################################################################################################################################################################
+        traininfo = subinformation[0]
+        trainloc = subinformation[1]
+        traindir = subinformation[2]
+        humavg = subinformation[3]
+        tempavg = subinformation[4]
+        total = subinformation[5]
+        
+        # initialization            
+        for l in range(0,total):
+            text_arr.append(l)
+            minute.append(l)        
+
+        # When someone is click same buttons
+        if direction == 0:
+            show_buttons = json.dumps({
+                                            "message": {
+                                            "text": "출발역과 도착역이 같습니다. 다시 선택해주세요!"
+                                        },
+                                            "keyboard": {
+                                                        "type": "buttons",
+                                                        "buttons": FROM
+                                        }
+                            })
+            return Response(show_buttons, mimetype='application/json')
+        elif direction < 0:
+            # Output information string part of part
+            text0 = "상행 : 녹동(소태) → 평동\n하행 : 평동 → 녹동(소태)\n"
+            text1 = "――――――――\n사용자의 출발지 : %s\n사용자의 목적지 : %s\n――――――――\n목적지까지 이동 시간은 약 %d분 입니다.\n――――――――\n" % ((str(unicode(contentFROM)).replace("에서"," ")), (str(unicode(contentTO)).replace("까지"," ")), (abs(direction)*2))
+            text3 = ""
+            show = []
+            j = 0
+            
+            # JSON load and final String maker
+            for i in range(total):
+                # Integer station to string station
+                all_train_pos = getIntegerID(trainloc[i])
+
+                # Output station information string part of part
+                text2_1 = str((all_train_pos))
+
+                # Load hum and temp data
+                all_train_humavg = humavg[i]
+                all_train_tempavg = tempavg[i]
+
+                # Lead time
+                minute[i] = abs((directionFROM - trainloc[i]) * 2)
+
+                if trainloc[i] < directionFROM and traindir[i] == 0:
+                    show.append([minute[i], text2_1, all_train_tempavg, all_train_humavg])
+                    j = j + 1
+
+            # 역과 가까운 순서로 정렬    
+            show.sort()
+            
+            # loop's temporary variable initialization
+            i = 0
+
+            # list 1 - 0 - 2 - 3
+            for i in range(j):
+                text3_1 = "%s역에 있는 상행 열차는 약 %d분 후 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (show[i][1],show[i][0],show[i][2],show[i][3])
+                text_arr[i] = text3_1
+                text3 = text3 + text_arr[i]
+            
+            # Complete output string
+            text = text0 + text1 + text3
+            show_buttons = json.dumps({
+                                            "message": {
+                                            "text": text
+                                        },
+                                            "keyboard": {
+                                                            "type": "buttons",
+                                                            "buttons": RESTART
+                                            }
+                            })
+            return Response(show_buttons, mimetype='application/json')
+        elif direction > 0:
+            # Output information string part of part
+            text0 = "상행 : 녹동(소태) → 평동\n하행 : 평동 → 녹동(소태)\n"
+            text1 = "――――――――\n사용자의 출발지 : %s\n사용자의 목적지 : %s\n――――――――\n" % ((str(unicode(contentFROM)).replace("에서"," ")), (str(unicode(contentTO)).replace("까지"," ")))
+            text3 = ""
+            show = []
+            j = 0
+           
+            # JSON load and final String maker
+            for i in range(total):
+                # Integer station to string station
+                all_train_pos = getIntegerID(trainloc[i])
+
+                # Output station information string part of part
+                text2_1 = str((all_train_pos))
+
+                # Load hum and temp data
+                all_train_humavg = humavg[i]
+                all_train_tempavg = tempavg[i]
+
+                # Lead time
+                minute[i] = abs((directionFROM - trainloc[i]) * 2)
+ 
+                if trainloc[i] > directionFROM and traindir[i] == 1:
+                    show.append([minute[i], text2_1, all_train_tempavg, all_train_humavg])
+                    j = j + 1
+            
+            # 역과 가까운 순서로 정렬    
+            show.sort()
+            
+#            if not show:
+#                text = "현재 이용할 수 있는 열차가 없습니다."
+#                show_buttons = json.dumps({
+#                                                "messgae": {
+#                                                "text" : text
+#                                            },
+#                                                "keyboard": {
+#                                                                "type": "buttons",
+#                                                                "buttons": RESTART
+#                                            }
+#                                })
+#                return Response(show_buttons, mimetype='application/json')
+                                                    
+            # loop's temporary variable initialization
+            i = 0
+
+            # list 1 - 0 - 2 - 3
+            for i in range(j):
+                text3_1 = "%s역에 있는 하행 열차는 약 %d분 후 이 역에 도착합니다.\n평균 온도 : %d℃ , 평균 습도 : %d%%\n――――――――\n" % (show[i][1],show[i][0],show[i][2],show[i][3])
+                text_arr[i] = text3_1
+                text3 = text3 + text_arr[i]
+            
+            
+            # Complete output string            
+            text = text0 + text1 + text3
+            show_buttons = json.dumps({
+                                            "message": {
+                                            "text": text
+                                        },
+                                            "keyboard": {
+                                                            "type": "buttons",
+                                                            "buttons": RESTART
+                                            }
+                            })
+            return Response(show_buttons, mimetype='application/json')
+        else:
+            text = "현재 이용할 수 있는 열차가 없습니다."
+            show_buttons = json.dumps({
+                                            "message": {
+                                            "text": text
+                                        },
+                                            "keyboard": {
+                                                            "type": "buttons",
+                                                            "buttons": RESTART
+                                            }
+                            })
+            return Response(show_buttons, mimetype='application/json')
+    ##########
+    elif content == u"역 정보 확인하기":
+        show_buttons = json.dumps({
+                            "message": {
+                                            "text": "어떤 역의 정보를 확인하시겠어요? 옆으로 쓸어 넘겨 역을 찾아보세요."
+                            },
+                            "keyboard": {
+                                            "type": "buttons",
+                                            # "buttons": STATIONINFO
+                                            "buttons": RESTART
+                            }
+
+                        })
+        return Response(show_buttons, mimetype='application/json')
+    elif u"역" in content:
+        if u"녹동" in content:
+            show_buttons = json.dumps({
+                                "message": {
+                                                "text": "어떤 역의 정보를 확인하시겠어요? 옆으로 쓸어 넘겨 역을 찾아보세요."
+                                },
+                                "keyboard": {
+                                                "type": "buttons",
+                                                "buttons": STATIONINFO
+                                }
+    
+                            })
+        return Response(show_buttons, mimetype='application/json')
+    ##########
+    elif u"처음으로" in content:
+        show_buttons = json.dumps({
+                            "message": {
+                                            "text": "처음 화면입니다. 무엇을 할까요?"
+                            },
+
+                            "keyboard": {
+                                            "type": "buttons",
+                                            "buttons": DEFAULT
+                            }
+                        })
+        return Response(show_buttons, mimetype='application/json')
+    elif u"개발사" in content:
+        show_buttons = json.dumps({
+                            "message": {
+                                            "text": "KETI 전자부품연구원\n임베디드 & SW 연구센터",
+                                            "photo": {
+                                                        "url": "http://www.keti.re.kr/_upload/editor/2016/12/09/recruit_main-1481273868_5aeb7d6cabb864d7c90a25ca125a930d.bmp",
+                                                        "width": 640,
+                                                        "height": 480
+                                            }
+                            },
+                            "keyboard": {
+                                            "type": "buttons",
+                                            "buttons": DEFAULT
+                            }                            
+                        })
+        return Response(show_buttons, mimetype='application/json')
+
+    else:        
+        show_buttons = json.dumps({
+                            "message": {
+                                            "text": "이해하지 못했어요. 무엇을 할까요?"    
+                            },
+                            "keyboard": {
+                                            "type": "buttons",
+                                            "buttons": DEFAULT
+                            }
+                        })
+        return Response(show_buttons, mimetype='application/json')
+
+########################################-----------########################################
+
+
+
+########################################  RUNNING  ########################################
+if __name__ == '__main__':
+    http_server= WSGIServer(('', 3441), app)
+    http_server.serve_forever()
+    Metro()
+########################################-----------########################################
